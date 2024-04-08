@@ -1,6 +1,6 @@
 [package]
 name = "quork"
-version = "0.6.2"
+version = "0.6.3"
 license = "MIT OR Apache-2.0"
 description = "A collection of small things that don't deserve their own crate"
 keywords = ["admin", "sys", "windows", "network", "linux"]
