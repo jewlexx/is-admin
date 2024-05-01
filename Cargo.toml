@@ -18,7 +18,7 @@ members = ["quork-proc"]
 
 [dependencies]
 quork-proc = { version = "0.3", path = "quork-proc", optional = true }
-spin = { version = "0.9", optional = true }
+spin = { version = "0.9.8", optional = true }
 lock_api = { version = "0.4", optional = true }
 thiserror = { version = "1.0" }
 cfg-if = "1.0"
