@@ -47,4 +47,4 @@ macros = ["quork-proc"]
 cc = "1.0"
 
 [dev-dependencies]
-is-root = "0.1"
+is-root = "0.1.3"
