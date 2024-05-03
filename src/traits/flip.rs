@@ -1,10 +1,5 @@
 //! Utilities to flip booleans
 
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Mutex, MutexGuard, TryLockError,
-};
-
 /// Flip the given value
 ///
 /// Usually used to flip a boolean value
@@ -28,124 +23,138 @@ impl Flip for bool {
     }
 }
 
-/// Error types for the [`FlipImmut`] trait
-#[derive(Debug, thiserror::Error)]
-pub enum Error<T> {
-    /// The error returned by the std `try_lock` method
-    StdLockError(#[from] TryLockError<T>),
+#[cfg(feature = "std")]
+mod _std {
+    use std::sync::{
+        atomic::{AtomicBool, Ordering},
+        Mutex, MutexGuard, TryLockError,
+    };
 
-    /// The [`parking_lot::Mutex::try_lock`] function returned [`None`]
+    use super::Flip;
+
+    /// Error types for the [`FlipImmut`] trait
+    #[derive(Debug, thiserror::Error)]
+    pub enum Error<T> {
+        /// The error returned by the std `try_lock` method
+        StdLockError(#[from] TryLockError<T>),
+
+        /// The [`parking_lot::Mutex::try_lock`] function returned [`None`]
+        #[cfg(feature = "parking_lot")]
+        LockError,
+    }
+
+    #[allow(clippy::module_name_repetitions)]
+    /// Immutable version of the [`Flip`] trait, intended for use on static variables
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use quork::traits::flip::{FlipImmut, Flip};
+    /// use std::sync::atomic::{AtomicBool, Ordering};
+    ///
+    /// static FOO: AtomicBool = AtomicBool::new(false);
+    /// assert!(!FOO.load(Ordering::Relaxed));
+    /// FOO.flip();
+    /// assert!(FOO.load(Ordering::Relaxed));
+    /// ```
+    pub trait FlipImmut<'a, T: Flip + core::fmt::Debug>
+    where
+        Self: Sized,
+        Self::Error: std::fmt::Debug,
+    {
+        /// The error type for the immutable flip trait
+        type Error;
+
+        /// Attempt to flip the value
+        ///
+        /// # Errors
+        /// - When `parking_lot` feature is enabled, will return an error if [`parking_lot::Mutex::try_lock()`] returns an error
+        fn try_flip(&'a self) -> Result<(), Self::Error>;
+
+        /// Flip the value
+        ///
+        /// # Panics
+        /// - Will panic if the [`FlipImmut::try_flip`] method returns an error
+        fn flip(&'a self) {
+            self.try_flip().unwrap();
+        }
+
+        /// Attempt to flip the value, without mutating the value
+        ///
+        /// # Errors
+        /// - When `parking_lot` feature is enabled, will return an error if [`parking_lot::Mutex::try_lock()`] returns an error
+        fn try_flipped(&'a self) -> Result<T, Self::Error>;
+
+        /// Flip the value
+        ///
+        /// # Panics
+        /// - Will panic if the [`FlipImmut::try_flipped`] method returns an error
+        fn flipped(&'a self) -> T {
+            self.try_flipped().unwrap()
+        }
+    }
+
+    impl<'a> FlipImmut<'a, bool> for AtomicBool {
+        type Error = Error<bool>;
+
+        fn try_flip(&'a self) -> Result<(), Self::Error> {
+            let val = self.load(Ordering::Relaxed);
+            self.store(!val, Ordering::Relaxed);
+
+            Ok(())
+        }
+
+        fn try_flipped(&'a self) -> Result<bool, Self::Error> {
+            let val = self.load(Ordering::Relaxed);
+
+            Ok(!val)
+        }
+    }
+
+    impl<'a, T: Flip + core::fmt::Debug + 'a> FlipImmut<'a, T> for Mutex<T> {
+        type Error = Error<MutexGuard<'a, T>>;
+
+        fn try_flip(&'a self) -> Result<(), Self::Error> {
+            self.try_lock()?.flip();
+
+            Ok(())
+        }
+
+        fn try_flipped(&'a self) -> Result<T, Self::Error> {
+            Ok(self.try_lock()?.flipped())
+        }
+    }
+
     #[cfg(feature = "parking_lot")]
-    LockError,
-}
+    impl<'a, T: Flip + core::fmt::Debug + 'a> FlipImmut<'a, T> for parking_lot::Mutex<T> {
+        type Error = Error<MutexGuard<'a, T>>;
 
-#[allow(clippy::module_name_repetitions)]
-/// Immutable version of the [`Flip`] trait, intended for use on static variables
-///
-/// # Examples
-///
-/// ```
-/// use quork::traits::flip::{FlipImmut, Flip};
-/// use std::sync::atomic::{AtomicBool, Ordering};
-///
-/// static FOO: AtomicBool = AtomicBool::new(false);
-/// assert!(!FOO.load(Ordering::Relaxed));
-/// FOO.flip();
-/// assert!(FOO.load(Ordering::Relaxed));
-/// ```
-pub trait FlipImmut<'a, T: Flip + core::fmt::Debug>
-where
-    Self: Sized,
-    Self::Error: std::fmt::Debug,
-{
-    /// The error type for the immutable flip trait
-    type Error;
-
-    /// Attempt to flip the value
-    ///
-    /// # Errors
-    /// - When `parking_lot` feature is enabled, will return an error if [`parking_lot::Mutex::try_lock()`] returns an error
-    fn try_flip(&'a self) -> Result<(), Self::Error>;
-
-    /// Flip the value
-    ///
-    /// # Panics
-    /// - Will panic if the [`FlipImmut::try_flip`] method returns an error
-    fn flip(&'a self) {
-        self.try_flip().unwrap();
-    }
-
-    /// Attempt to flip the value, without mutating the value
-    ///
-    /// # Errors
-    /// - When `parking_lot` feature is enabled, will return an error if [`parking_lot::Mutex::try_lock()`] returns an error
-    fn try_flipped(&'a self) -> Result<T, Self::Error>;
-
-    /// Flip the value
-    ///
-    /// # Panics
-    /// - Will panic if the [`FlipImmut::try_flipped`] method returns an error
-    fn flipped(&'a self) -> T {
-        self.try_flipped().unwrap()
-    }
-}
-
-impl<'a> FlipImmut<'a, bool> for AtomicBool {
-    type Error = Error<bool>;
-
-    fn try_flip(&'a self) -> Result<(), Self::Error> {
-        let val = self.load(Ordering::Relaxed);
-        self.store(!val, Ordering::Relaxed);
-
-        Ok(())
-    }
-
-    fn try_flipped(&'a self) -> Result<bool, Self::Error> {
-        let val = self.load(Ordering::Relaxed);
-
-        Ok(!val)
-    }
-}
-
-impl<'a, T: Flip + core::fmt::Debug + 'a> FlipImmut<'a, T> for Mutex<T> {
-    type Error = Error<MutexGuard<'a, T>>;
-
-    fn try_flip(&'a self) -> Result<(), Self::Error> {
-        self.try_lock()?.flip();
-
-        Ok(())
-    }
-
-    fn try_flipped(&'a self) -> Result<T, Self::Error> {
-        Ok(self.try_lock()?.flipped())
-    }
-}
-
-#[cfg(feature = "parking_lot")]
-impl<'a, T: Flip + core::fmt::Debug + 'a> FlipImmut<'a, T> for parking_lot::Mutex<T> {
-    type Error = Error<MutexGuard<'a, T>>;
-
-    fn flip(&'a self) {
-        self.lock().flip()
-    }
-
-    fn try_flip(&'a self) -> Result<(), Self::Error> {
-        match self.try_lock() {
-            Some(mut v) => Ok(v.flip()),
-            None => Err(Error::LockError),
+        fn flip(&'a self) {
+            self.lock().flip()
         }
-    }
 
-    fn try_flipped(&'a self) -> Result<T, Self::Error> {
-        match self.try_lock() {
-            Some(v) => Ok(v.flipped()),
-            None => Err(Error::LockError),
+        fn try_flip(&'a self) -> Result<(), Self::Error> {
+            match self.try_lock() {
+                Some(mut v) => Ok(v.flip()),
+                None => Err(Error::LockError),
+            }
+        }
+
+        fn try_flipped(&'a self) -> Result<T, Self::Error> {
+            match self.try_lock() {
+                Some(v) => Ok(v.flipped()),
+                None => Err(Error::LockError),
+            }
         }
     }
 }
+
+#[cfg(feature = "std")]
+pub use _std::*;
 
 #[cfg(test)]
 mod tests {
+    use core::sync::atomic::AtomicBool;
     use std::sync::Mutex;
 
     use super::*;

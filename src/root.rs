@@ -4,8 +4,8 @@
 /// Errors when checking if process is root
 pub enum Error {
     #[cfg(windows)]
-    /// The Windows Process elevation cannot be checked
     #[error("Windows related error: {0}")]
+    /// The Windows Process elevation cannot be checked
     WindowsError(#[from] windows::core::Error),
 }
 

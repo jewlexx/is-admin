@@ -3,7 +3,7 @@ authors = ["Juliette Cordor"]
 categories = ["development-tools", "os", "os::unix-apis", "os::windows-apis"]
 description = "A collection of small things that don't deserve their own crate"
 documentation = "https://docs.rs/quork"
-edition = "2018"
+edition = "2021"
 homepage = "https://github.com/jewlexx/quork.git"
 keywords = ["admin", "linux", "network", "sys", "windows"]
 license = "MIT OR Apache-2.0"
@@ -25,9 +25,10 @@ spin = { version = "0.9", optional = true }
 thiserror = { version = "1.0" }
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.56.0", features = [
+windows = { version = "0.56", features = [
     "Win32_Foundation",
     "Win32_Networking_NetworkListManager",
+    "Win32_Security",
     "Win32_Security",
     "Win32_System_Com",
     "Win32_System_Threading",
@@ -37,11 +38,12 @@ windows = { version = "0.56.0", features = [
 nix = { version = "0.28", features = ["user"] }
 
 [features]
-all = ["macros", "network", "root", "traits"]
+all = ["macros", "network", "root", "std", "traits"]
 default = ["all"]
 macros = ["quork-proc"]
 network = []
-root = []
+root = ["std"]
+std = []
 traits = []
 
 [build-dependencies]
