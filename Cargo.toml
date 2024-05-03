@@ -1,6 +1,6 @@
 [package]
 name = "quork"
-version = "0.5.1"
+version = "0.6.3"
 license = "MIT OR Apache-2.0"
 description = "A collection of small things that don't deserve their own crate"
 keywords = ["admin", "sys", "windows", "network", "linux"]
@@ -24,7 +24,7 @@ thiserror = { version = "1.0" }
 cfg-if = "1.0"
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.51", features = [
+windows = { version = "0.54", features = [
     "Win32_Networking_NetworkListManager",
     "Win32_System_Com",
     "Win32_Foundation",
@@ -33,7 +33,7 @@ windows = { version = "0.51", features = [
 ] }
 
 [target.'cfg(unix)'.dependencies]
-nix = { version = "0.27", features = ["user"] }
+nix = { version = "0.28", features = ["user"] }
 
 [features]
 default = ["all"]
