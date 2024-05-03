@@ -1,15 +1,16 @@
 [package]
-name = "quork"
-version = "0.6.3"
-license = "MIT OR Apache-2.0"
-description = "A collection of small things that don't deserve their own crate"
-keywords = ["admin", "sys", "windows", "network", "linux"]
-categories = ["os", "os::unix-apis", "os::windows-apis", "development-tools"]
 authors = ["Juliette Cordor"]
+categories = ["development-tools", "os", "os::unix-apis", "os::windows-apis"]
+description = "A collection of small things that don't deserve their own crate"
 documentation = "https://docs.rs/quork"
-repository = "https://github.com/jewlexx/quork.git"
-homepage = "https://github.com/jewlexx/quork.git"
 edition = "2018"
+homepage = "https://github.com/jewlexx/quork.git"
+keywords = ["admin", "linux", "network", "sys", "windows"]
+license = "MIT OR Apache-2.0"
+name = "quork"
+repository = "https://github.com/jewlexx/quork.git"
+rust-version = "1.69.0"
+version = "0.6.3"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,31 +18,31 @@ edition = "2018"
 members = ["quork-proc"]
 
 [dependencies]
+cfg-if = "1.0"
+lock_api = { version = "0.4", optional = true }
 quork-proc = { version = "0.3", path = "quork-proc", optional = true }
 spin = { version = "0.9", optional = true }
-lock_api = { version = "0.4", optional = true }
 thiserror = { version = "1.0" }
-cfg-if = "1.0"
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.54", features = [
-    "Win32_Networking_NetworkListManager",
-    "Win32_System_Com",
+windows = { version = "0.56.0", features = [
     "Win32_Foundation",
-    "Win32_System_Threading",
+    "Win32_Networking_NetworkListManager",
     "Win32_Security",
+    "Win32_System_Com",
+    "Win32_System_Threading",
 ] }
 
 [target.'cfg(unix)'.dependencies]
 nix = { version = "0.28", features = ["user"] }
 
 [features]
+all = ["macros", "network", "root", "traits"]
 default = ["all"]
-all = ["macros", "root", "traits", "network"]
+macros = ["quork-proc"]
 network = []
 root = []
 traits = []
-macros = ["quork-proc"]
 
 [build-dependencies]
 cc = "1.0"
