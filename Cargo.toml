@@ -1,13 +1,15 @@
 [package]
+authors = ["Juliette Cordor"]
 categories = ["development-tools", "os", "os::unix-apis", "os::windows-apis"]
 description = "A collection of small things that don't deserve their own crate"
 documentation = "https://docs.rs/quork"
-edition = "2021"
+edition = "2018"
 homepage = "https://github.com/jewlexx/quork.git"
 keywords = ["admin", "linux", "network", "sys", "windows"]
 license = "MIT OR Apache-2.0"
 name = "quork"
 repository = "https://github.com/jewlexx/quork.git"
+rust-version = "1.69.0"
 version = "0.6.3"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -40,7 +42,6 @@ default = ["all"]
 macros = ["quork-proc"]
 network = []
 root = ["std"]
-std = []
 traits = []
 
 [build-dependencies]
