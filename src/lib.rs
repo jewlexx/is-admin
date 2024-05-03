@@ -3,6 +3,8 @@
 #![doc = include_str!("../README.md")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 cfg_if::cfg_if! {
     if #[cfg(feature = "std")] {
         use std as std;
@@ -49,6 +51,4 @@ cfg_if::cfg_if! {
 }
 
 /// Truncation helpers for truncating strings when formatting
-// TODO: Make this work without std crate
-#[cfg(feature = "std")]
 pub mod truncate;
