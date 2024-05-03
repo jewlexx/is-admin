@@ -43,6 +43,7 @@ default = ["all"]
 macros = ["quork-proc"]
 network = []
 root = ["std"]
+std = []
 traits = []
 
 [build-dependencies]
