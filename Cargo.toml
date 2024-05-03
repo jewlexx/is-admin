@@ -1,15 +1,14 @@
 [package]
-authors = ["Juliette Cordor"]
 categories = ["development-tools", "os", "os::unix-apis", "os::windows-apis"]
 description = "A collection of small things that don't deserve their own crate"
 documentation = "https://docs.rs/quork"
-edition = "2018"
+edition = "2021"
 homepage = "https://github.com/jewlexx/quork.git"
 keywords = ["admin", "linux", "network", "sys", "windows"]
 license = "MIT OR Apache-2.0"
 name = "quork"
 repository = "https://github.com/jewlexx/quork.git"
-version = "0.6.2"
+version = "0.6.3"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -24,7 +23,7 @@ spin = { version = "0.9", optional = true }
 thiserror = { version = "1.0" }
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.51", features = [
+windows = { version = "0.56", features = [
     "Win32_Foundation",
     "Win32_Networking_NetworkListManager",
     "Win32_Security",
@@ -33,7 +32,7 @@ windows = { version = "0.51", features = [
 ] }
 
 [target.'cfg(unix)'.dependencies]
-nix = { version = "0.27", features = ["user"] }
+nix = { version = "0.28", features = ["user"] }
 
 [features]
 all = ["macros", "network", "root", "std", "traits"]
