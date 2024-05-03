@@ -43,7 +43,7 @@ pub mod traits;
 pub mod network;
 
 cfg_if::cfg_if! {
-    if #[cfg(feature = "root")] {
+    if #[cfg(all(feature = "root", feature = "std"))] {
         pub mod root;
     }
 }
