@@ -3,7 +3,7 @@ authors = ["Juliette Cordor"]
 categories = ["development-tools", "os", "os::unix-apis", "os::windows-apis"]
 description = "A collection of small things that don't deserve their own crate"
 documentation = "https://docs.rs/quork"
-edition = "2018"
+edition = "2021"
 homepage = "https://github.com/jewlexx/quork.git"
 keywords = ["admin", "linux", "network", "sys", "windows"]
 license = "MIT OR Apache-2.0"
@@ -28,6 +28,7 @@ thiserror = { version = "1.0" }
 windows = { version = "0.56", features = [
     "Win32_Foundation",
     "Win32_Networking_NetworkListManager",
+    "Win32_Security",
     "Win32_Security",
     "Win32_System_Com",
     "Win32_System_Threading",
