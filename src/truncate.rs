@@ -1,7 +1,7 @@
 use crate::std::fmt;
 use alloc::string::{String, ToString};
 
-#[cfg(feature = "traits")]
+#[cfg(all(feature = "traits", feature = "std"))]
 pub use crate::traits::truncate::Truncation;
 
 #[derive(Debug)]
