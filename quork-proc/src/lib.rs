@@ -10,6 +10,7 @@ mod const_str;
 mod enum_list;
 mod from_tuple;
 mod new;
+mod sized_string;
 mod time_fn;
 mod trim_lines;
 
@@ -121,4 +122,16 @@ pub fn lstrip_lines(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let literal = parse_macro_input!(input as LitStr);
 
     trim_lines::trim_lines(&literal, &trim_lines::Alignment::Left).into()
+}
+
+/// Creates a [`SizedString`] from a string literal
+///
+/// # Examples
+///
+/// ```rust
+/// let s = sized_string!("Hello, World!");
+/// ```
+#[proc_macro]
+pub fn sized_string(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    sized_string::sized_string(&syn::parse_macro_input!(input as LitStr)).into()
 }

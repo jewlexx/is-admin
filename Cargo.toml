@@ -38,11 +38,12 @@ windows = { version = "0.56", features = [
 nix = { version = "0.28", features = ["user"] }
 
 [features]
-all = ["macros", "network", "root", "std", "traits"]
+all = ["macros", "network", "root", "std", "traits", "sized_string"]
 default = ["all"]
 macros = ["quork-proc"]
 network = []
 root = ["std"]
+sized_string = []
 std = []
 traits = []
 
