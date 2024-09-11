@@ -1,5 +1,5 @@
 use proc_macro2::{Ident, Span, TokenStream};
-use proc_macro_error::{abort_if_dirty, emit_error};
+use proc_macro_error2::{abort_if_dirty, emit_error};
 use syn::{spanned::Spanned, Data, DeriveInput};
 
 use proc_macro_crate::{crate_name, FoundCrate};
@@ -35,7 +35,7 @@ pub fn enum_list(ast: &DeriveInput) -> TokenStream {
                 })
                 .collect::<Vec<_>>()
         }
-        _ => proc_macro_error::abort_call_site!("Can only be derived on an enum"),
+        _ => proc_macro_error2::abort_call_site!("Can only be derived on an enum"),
     };
 
     abort_if_dirty();
