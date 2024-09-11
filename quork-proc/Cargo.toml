@@ -7,7 +7,7 @@ homepage = "https://github.com/jewlexx/quork.git"
 license = "MIT"
 name = "quork-proc"
 repository = "https://github.com/jewlexx/quork.git"
-version = "0.3.1"
+version = "0.3.2"
 
 [lib]
 proc-macro = true
