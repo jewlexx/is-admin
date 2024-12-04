@@ -1,3 +1,8 @@
+#![deprecated(
+    since = "0.8.0",
+    note = "Use the `map::Map` trait instead. This trait will be removed in the future."
+)]
+
 //! Map a Mutex Lock
 //!
 //! Can theoretically be anything but designed primarily for Mutex Locks
