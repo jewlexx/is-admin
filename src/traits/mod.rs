@@ -6,6 +6,7 @@ cfg_if::cfg_if! {
         pub mod flip;
         pub mod lock;
         pub mod truncate;
+        pub mod map;
     }
 }
 
@@ -20,6 +21,7 @@ pub mod prelude {
             pub use super::flip::*;
             pub use super::lock::*;
             pub use super::truncate::*;
+            pub use super::map::*;
         }
     }
 

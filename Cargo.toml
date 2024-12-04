@@ -20,6 +20,7 @@ members = ["quork-proc"]
 [dependencies]
 cfg-if = "1.0"
 lock_api = { version = "0.4", optional = true }
+parking_lot = { version = "0.12", optional = true }
 quork-proc = { version = "0.3", path = "quork-proc", optional = true }
 spin = { version = "0.9", optional = true }
 thiserror = { version = "1.0" }
