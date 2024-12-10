@@ -1,6 +1,6 @@
 //! Windows specific functionality.
 
-use std::sync::Mutex;
+use core::sync::atomic::{AtomicBool, Ordering};
 
 use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_MULTITHREADED};
 
@@ -9,24 +9,22 @@ pub mod network;
 #[cfg(feature = "root")]
 pub mod root;
 
-pub(crate) static COM_INIT: Mutex<ComInit> = Mutex::new(ComInit { initialized: false });
+pub(crate) static COM_INIT: ComInit = ComInit {
+    initialized: AtomicBool::new(false),
+};
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct ComInit {
-    initialized: bool,
-}
-
-#[derive(Debug, thiserror::Error)]
-pub(crate) enum ComError {
-    #[error("Failed to lock COM_INIT variable: {0}")]
-    LockError(#[from] std::sync::PoisonError<std::sync::MutexGuard<'static, ComInit>>),
+    initialized: AtomicBool,
 }
 
 impl ComInit {
     pub(crate) unsafe fn init() {
-        let mut com_init = COM_INIT.lock().expect("unpoisoned mutex");
-        if !com_init.initialized {
-            com_init.initialized = CoInitializeEx(None, COINIT_MULTITHREADED).is_ok();
+        if !COM_INIT.initialized.load(Ordering::Relaxed) {
+            COM_INIT.initialized.store(
+                CoInitializeEx(None, COINIT_MULTITHREADED).is_ok(),
+                Ordering::Relaxed,
+            );
         }
     }
 }
