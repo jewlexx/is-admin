@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, TokenStream};
 use proc_macro_error::{abort, abort_call_site};
 use quote::{quote, ToTokens};
-use syn::{spanned::Spanned, DeriveInput, Expr, ExprLit, Lit, Variant};
+use syn::{spanned::Spanned, DeriveInput, Expr, ExprLit, Lit, Variant, Visibility};
 
 fn ignore_variant(variant: &Variant) -> bool {
     variant.attrs.iter().any(|attr| match attr.meta {
@@ -17,6 +17,7 @@ struct StrippedData {
     ident: Ident,
     variants: Vec<TokenStream>,
     meta: Vec<Expr>,
+    vis: Visibility,
 }
 
 // struct MetaArgs {
@@ -74,10 +75,7 @@ pub fn strip_enum(ast: &DeriveInput) -> TokenStream {
                     ),
                 }
             } else {
-                Ident::new(
-                    &format!("{}Stripped", ast.ident.to_string()),
-                    ast.ident.span(),
-                )
+                Ident::new(&format!("{}Stripped", ast.ident), ast.ident.span())
             };
 
             let meta = attrs
@@ -97,6 +95,7 @@ pub fn strip_enum(ast: &DeriveInput) -> TokenStream {
                 ident: new_ident,
                 variants,
                 meta,
+                vis: ast.vis.clone(),
             }
         }
         _ => abort_call_site!("`Strip` can only be derived for enums"),
@@ -106,11 +105,12 @@ pub fn strip_enum(ast: &DeriveInput) -> TokenStream {
         ident,
         variants,
         meta,
+        vis,
     } = info;
 
     quote! {
         #(#[#meta])*
-        pub enum #ident {
+        #vis enum #ident {
             #(#variants),*
         }
     }
