@@ -1,7 +1,10 @@
 use proc_macro2::{Ident, TokenStream};
 use proc_macro_error::{abort, abort_call_site};
 use quote::{quote, ToTokens};
-use syn::{spanned::Spanned, DeriveInput, Expr, ExprLit, Lit, Variant, Visibility};
+use syn::{
+    punctuated::Punctuated, spanned::Spanned, DeriveInput, Expr, ExprLit, Lit, Meta, Token,
+    Variant, Visibility,
+};
 
 fn ignore_variant(variant: &Variant) -> bool {
     variant.attrs.iter().any(|attr| match attr.meta {
@@ -48,53 +51,48 @@ pub fn strip_enum(ast: &DeriveInput) -> TokenStream {
                 })
                 .collect::<Vec<_>>();
 
-            let new_ident = if let Some(info_attr) = attrs
-                .iter()
-                .find(|attr| attr.path().is_ident("stripped_ident"))
-            {
-                match &info_attr.meta {
-                    syn::Meta::NameValue(name_value) => {
-                        let ident = &name_value.value;
+            let default_ident = || Ident::new(&format!("{}Stripped", ast.ident), ast.ident.span());
 
-                        if let syn::Expr::Lit(ExprLit {
-                            lit: Lit::Str(string),
-                            ..
-                        }) = ident
-                        {
-                            Ident::new(
-                                &string.value().replace("{}", &ast.ident.to_string()),
-                                ast.ident.span(),
-                            )
-                        } else {
-                            abort!(ident.span(), "Expected string literal.")
-                        }
+            let (new_ident, ignored) = if let Some(info_attr) =
+                attrs.iter().find(|attr| attr.path().is_ident("stripped"))
+            {
+                let mut new_ident: Option<Ident> = None;
+                let mut ignored = false;
+
+                syn::meta::parser(|meta| {
+                    if meta.path.is_ident("ident") {
+                        new_ident = Some(meta.value()?.parse()?);
+                        Ok(())
+                    } else if meta.path.is_ident("ignore") {
+                        ignored = true;
+                        Ok(())
+                    } else {
+                        Err(meta.error("unsupported stripped property"))
                     }
-                    _ => abort!(
-                        info_attr.span(),
-                        "Expected #[stripped_ident = \"\"]. Found other style attribute."
-                    ),
-                }
+                });
+
+                (new_ident.unwrap_or_else(default_ident), ignored)
             } else {
-                Ident::new(&format!("{}Stripped", ast.ident), ast.ident.span())
+                (default_ident(), false)
             };
 
-            let meta = attrs
-                .iter()
-                .filter(|attr| attr.path().is_ident("stripped_meta"))
-                .map(|attr| match &attr.meta {
-                    // TODO: Add inherit metadata
-                    syn::Meta::List(meta) => meta.parse_args().expect("single meta attribute"),
-                    _ => abort!(
-                        attr.span(),
-                        "Expected #[stripped_meta(...)]. Found other style attribute."
-                    ),
-                })
-                .collect();
+            // let meta = attrs
+            //     .iter()
+            //     .filter(|attr| attr.path().is_ident("stripped_meta"))
+            //     .map(|attr| match &attr.meta {
+            //         // TODO: Add inherit metadata
+            //         syn::Meta::List(meta) => meta.parse_args().expect(&*"single meta attribute"),
+            //         _ => abort!(
+            //             attr.span(),
+            //             "Expected #[stripped_meta(...)]. Found other style attribute."
+            //         ),
+            //     })
+            //     .collect();
 
             StrippedData {
                 ident: new_ident,
                 variants,
-                meta,
+                meta: ast.,
                 vis: ast.vis.clone(),
             }
         }
