@@ -93,22 +93,17 @@ pub fn strip_enum(ast: &mut DeriveInput) -> TokenStream {
                 default_ident()
             };
 
-            let mut meta_list: Vec<syn::Meta> = vec![];
-
-            if let Some(stripped_meta_pos) = attrs
+            let meta_list: Vec<syn::Meta> = attrs
                 .iter()
-                .position(|attr| attr.path().is_ident("stripped_meta"))
-            {
-                let meta_attr = attrs.remove(stripped_meta_pos);
-
-                match meta_attr.meta {
-                    Meta::List(_) => meta_list.push(meta_attr.meta),
+                .filter(|attr| attr.path().is_ident("stripped_meta"))
+                .map(|meta_attr| match meta_attr.meta {
+                    Meta::List(_) => meta_attr.meta.clone(),
                     _ => abort!(
                         meta_attr.span(),
                         "Expected #[stripped_meta(...)]. Found other style attribute."
                     ),
-                }
-            };
+                })
+                .collect();
 
             StrippedData {
                 ident: new_ident,
