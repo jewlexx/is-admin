@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, TokenStream};
 use proc_macro_error2::{abort, abort_call_site};
 use quote::{quote, ToTokens};
-use syn::{spanned::Spanned, DeriveInput, Meta, Variant, Visibility};
+use syn::{spanned::Spanned, DeriveInput, Meta, MetaNameValue, Variant, Visibility};
 
 fn ignore_variant(variant: &Variant) -> bool {
     variant.attrs.iter().any(|attr| match attr.meta {
@@ -96,8 +96,26 @@ pub fn strip_enum(ast: &mut DeriveInput) -> TokenStream {
             let meta_list: Vec<syn::Meta> = attrs
                 .iter()
                 .filter(|attr| attr.path().is_ident("stripped_meta"))
-                .map(|meta_attr| match meta_attr.meta {
-                    Meta::List(ref meta_data) => meta_data.parse_args::<syn::Meta>().unwrap(),
+                .flat_map(|meta_attr| match &meta_attr.meta {
+                    Meta::List(meta_data) => vec![meta_data.parse_args::<syn::Meta>().unwrap()],
+                    // Meta::NameValue(MetaNameValue {
+                    //     value:
+                    //         syn::Expr::Lit(syn::ExprLit {
+                    //             lit: syn::Lit::Str(path),
+                    //             ..
+                    //         }),
+                    //     ..
+                    // }) => {
+                    //     if &path.value() == "inherit" {
+                    //         attrs
+                    //             .iter()
+                    //             .filter(|attr| !attr.path().is_ident("stripped_meta"))
+                    //             .map(|attr| attr.meta.clone())
+                    //             .collect()
+                    //     } else {
+                    //         abort!(path.span(), "Expected `inherit`");
+                    //     }
+                    // }
                     _ => abort!(
                         meta_attr.span(),
                         "Expected #[stripped_meta(...)]. Found other style attribute."

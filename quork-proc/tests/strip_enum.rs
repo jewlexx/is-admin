@@ -37,6 +37,13 @@ enum EnumExclude {
     Test3(DummyStruct),
 }
 
+#[derive(Strip, Display)]
+#[stripped_meta(derive(EnumIter))]
+#[stripped_meta(strum(serialize_all = "kebab-case"))]
+enum EnumWithInherit {
+    Test1(DummyStruct),
+}
+
 #[test]
 fn excludes_no_hook_variant() {
     let variants = enum_to_string::<EnumExcludeStripped>();
