@@ -13,8 +13,7 @@ pub fn enum_to_string<T: IntoEnumIterator + Display>() -> String {
 struct DummyStruct;
 
 #[derive(Strip)]
-#[stripped_meta(derive(EnumIter, Display))]
-#[stripped_meta(strum(serialize_all = "kebab-case"))]
+#[stripped(meta = derive(EnumIter, Display), meta = strum(serialize_all = "kebab-case"))]
 enum EnumWithData {
     Test1(DummyStruct),
     Test2(DummyStruct),

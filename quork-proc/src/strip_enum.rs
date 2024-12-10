@@ -71,19 +71,15 @@ pub fn strip_enum(ast: &mut DeriveInput) -> TokenStream {
 
             let (new_ident, meta_list) = if let Some(info_attr_pos) = attrs
                 .iter()
-                .position(|attr| attr.path().is_ident("stripped_ident"))
+                .position(|attr| attr.path().is_ident("stripped"))
             {
                 let info_attr = attrs.remove(info_attr_pos);
 
                 let mut new_ident: Option<Ident> = None;
-                let mut meta_list = Vec::<syn::Meta>::new();
 
                 let ident_parser = syn::meta::parser(|meta| {
                     if meta.path.is_ident("ident") {
                         new_ident = Some(meta.value()?.parse()?);
-                        Ok(())
-                    } else if meta.path.is_ident("meta") {
-                        meta_list.push(meta.value()?.parse()?);
                         Ok(())
                     } else {
                         Err(meta.error("unsupported stripped property"))
@@ -113,6 +109,8 @@ pub fn strip_enum(ast: &mut DeriveInput) -> TokenStream {
         meta,
         vis,
     } = info;
+
+    // panic!("{:?}", meta);
 
     quote! {
         #(#meta)*
