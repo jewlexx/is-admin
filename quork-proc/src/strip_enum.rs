@@ -17,7 +17,13 @@ fn ignore_variant(variant: &Variant) -> bool {
                 }
             });
 
-            list.parse_args_with(list_parser).unwrap();
+            if let Err(err) = list.parse_args_with(list_parser) {
+                abort! {
+                    err.span(),
+                    "Failed to parse stripped attribute: {}", err;
+                    help = "Only supported properties on enum variants are `ignore`"
+                }
+            }
 
             ignored
         }

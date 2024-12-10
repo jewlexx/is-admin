@@ -32,7 +32,7 @@ fn has_all_variants() {
 #[stripped_meta(strum(serialize_all = "kebab-case"))]
 enum EnumExclude {
     Test1(DummyStruct),
-    #[stripped(ignore)]
+    #[stripped(notignore)]
     Test2(DummyStruct),
     Test3(DummyStruct),
 }
