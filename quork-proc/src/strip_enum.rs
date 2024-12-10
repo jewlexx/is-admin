@@ -1,17 +1,29 @@
 use proc_macro2::{Ident, TokenStream};
 use proc_macro_error::{abort, abort_call_site};
 use quote::{quote, ToTokens};
-use syn::{
-    punctuated::Punctuated, spanned::Spanned, DeriveInput, Expr, ExprLit, Lit, Meta, Token,
-    Variant, Visibility,
-};
+use syn::{spanned::Spanned, DeriveInput, Meta, Variant, Visibility};
 
 fn ignore_variant(variant: &Variant) -> bool {
     variant.attrs.iter().any(|attr| match attr.meta {
-        syn::Meta::Path(ref p) => p.is_ident("stripped_ignore"),
+        syn::Meta::List(ref list) if list.path.is_ident("stripped") => {
+            let mut ignored = false;
+
+            let list_parser = syn::meta::parser(|meta| {
+                if meta.path.is_ident("ignore") {
+                    ignored = true;
+                    Ok(())
+                } else {
+                    Err(meta.error("unsupported stripped property"))
+                }
+            });
+
+            list.parse_args_with(list_parser).unwrap();
+
+            ignored
+        }
         _ => abort!(
             attr.span(),
-            "Expected path-style (i.e #[stripped_ignore]), found other style attribute macro"
+            "Expected list-style (i.e #[stripped(...)]), found other style attribute macro"
         ),
     })
 }
@@ -19,7 +31,7 @@ fn ignore_variant(variant: &Variant) -> bool {
 struct StrippedData {
     ident: Ident,
     variants: Vec<TokenStream>,
-    meta: Vec<Expr>,
+    meta: Vec<Meta>,
     vis: Visibility,
 }
 
@@ -33,9 +45,9 @@ struct StrippedData {
 //     }
 // }
 
-pub fn strip_enum(ast: &DeriveInput) -> TokenStream {
+pub fn strip_enum(ast: &mut DeriveInput) -> TokenStream {
     let data = &ast.data;
-    let attrs = &ast.attrs;
+    let attrs = &mut ast.attrs;
 
     let info: StrippedData = match data {
         syn::Data::Enum(ref e) => {
@@ -51,48 +63,44 @@ pub fn strip_enum(ast: &DeriveInput) -> TokenStream {
                 })
                 .collect::<Vec<_>>();
 
-            let default_ident = || Ident::new(&format!("{}Stripped", ast.ident), ast.ident.span());
+            let default_ident = {
+                let ident = ast.ident.clone();
+                let span = ident.span();
+                move || Ident::new(&format!("{ident}Stripped"), span)
+            };
 
-            let (new_ident, ignored) = if let Some(info_attr) =
-                attrs.iter().find(|attr| attr.path().is_ident("stripped"))
+            let (new_ident, meta_list) = if let Some(info_attr_pos) = attrs
+                .iter()
+                .position(|attr| attr.path().is_ident("stripped_ident"))
             {
-                let mut new_ident: Option<Ident> = None;
-                let mut ignored = false;
+                let info_attr = attrs.remove(info_attr_pos);
 
-                syn::meta::parser(|meta| {
+                let mut new_ident: Option<Ident> = None;
+                let mut meta_list = Vec::<syn::Meta>::new();
+
+                let ident_parser = syn::meta::parser(|meta| {
                     if meta.path.is_ident("ident") {
                         new_ident = Some(meta.value()?.parse()?);
                         Ok(())
-                    } else if meta.path.is_ident("ignore") {
-                        ignored = true;
+                    } else if meta.path.is_ident("meta") {
+                        meta_list.push(meta.value()?.parse()?);
                         Ok(())
                     } else {
                         Err(meta.error("unsupported stripped property"))
                     }
                 });
 
-                (new_ident.unwrap_or_else(default_ident), ignored)
-            } else {
-                (default_ident(), false)
-            };
+                info_attr.parse_args_with(ident_parser).unwrap();
 
-            // let meta = attrs
-            //     .iter()
-            //     .filter(|attr| attr.path().is_ident("stripped_meta"))
-            //     .map(|attr| match &attr.meta {
-            //         // TODO: Add inherit metadata
-            //         syn::Meta::List(meta) => meta.parse_args().expect(&*"single meta attribute"),
-            //         _ => abort!(
-            //             attr.span(),
-            //             "Expected #[stripped_meta(...)]. Found other style attribute."
-            //         ),
-            //     })
-            //     .collect();
+                (new_ident.unwrap_or_else(default_ident), meta_list)
+            } else {
+                (default_ident(), Vec::new())
+            };
 
             StrippedData {
                 ident: new_ident,
                 variants,
-                meta: ast.,
+                meta: meta_list,
                 vis: ast.vis.clone(),
             }
         }
@@ -107,7 +115,7 @@ pub fn strip_enum(ast: &DeriveInput) -> TokenStream {
     } = info;
 
     quote! {
-        #(#[#meta])*
+        #(#meta)*
         #vis enum #ident {
             #(#variants),*
         }
