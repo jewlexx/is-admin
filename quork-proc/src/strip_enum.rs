@@ -97,7 +97,7 @@ pub fn strip_enum(ast: &mut DeriveInput) -> TokenStream {
                 .iter()
                 .filter(|attr| attr.path().is_ident("stripped_meta"))
                 .map(|meta_attr| match meta_attr.meta {
-                    Meta::List(_) => meta_attr.meta.clone(),
+                    Meta::List(ref meta_data) => meta_data.parse_args::<syn::Meta>().unwrap(),
                     _ => abort!(
                         meta_attr.span(),
                         "Expected #[stripped_meta(...)]. Found other style attribute."
