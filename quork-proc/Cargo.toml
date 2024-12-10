@@ -15,7 +15,7 @@ proc-macro = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-heck = { version = "0.4.1", features = ["unicode"] }
+heck = { version = "0.5" }
 proc-macro-crate = "3.1"
 proc-macro-error2 = "2.0"
 proc-macro2 = "1.0"
@@ -23,4 +23,4 @@ quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 
 [dev-dependencies]
-strum = { version = "0.25.0", features = ["derive"] }
+strum = { version = "0.26", features = ["derive"] }
