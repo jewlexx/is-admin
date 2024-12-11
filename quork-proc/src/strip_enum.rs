@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, TokenStream};
 use proc_macro_error2::{abort, abort_call_site};
 use quote::{quote, ToTokens};
-use syn::{spanned::Spanned, DeriveInput, Meta, Variant, Visibility};
+use syn::{spanned::Spanned, DeriveInput, Meta, MetaList, MetaNameValue, Variant, Visibility};
 
 fn ignore_variant(variant: &Variant) -> bool {
     variant.attrs.iter().any(|attr| match attr.meta {
@@ -27,10 +27,17 @@ fn ignore_variant(variant: &Variant) -> bool {
 
             ignored
         }
-        _ => abort!(
-            attr.span(),
-            "Expected list-style (i.e #[stripped(...)]), found other style attribute macro"
-        ),
+        Meta::Path(ref path)
+        | Meta::List(MetaList { ref path, .. })
+        | Meta::NameValue(MetaNameValue { ref path, .. })
+            if path.is_ident("stripped") =>
+        {
+            abort!(
+                attr.span(),
+                "Expected list-style (i.e #[stripped(...)]), found other style attribute macro"
+            );
+        }
+        _ => false,
     })
 }
 
