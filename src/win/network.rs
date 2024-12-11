@@ -1,11 +1,11 @@
 //! Network helpers
 
-use windows::{
-    core::GUID,
-    Win32::{
-        Networking::NetworkListManager::{INetworkListManager, NLM_CONNECTIVITY},
-        System::Com::{CoCreateInstance, CLSCTX_ALL},
+use windows::Win32::{
+    Networking::{
+        self,
+        NetworkListManager::{INetworkListManager, NLM_CONNECTIVITY},
     },
+    System::Com::{CoCreateInstance, CLSCTX_ALL},
 };
 
 use windows::Win32::Networking::NetworkListManager::{
@@ -119,10 +119,6 @@ impl From<Connectivity> for NLM_CONNECTIVITY {
     }
 }
 
-extern "C" {
-    fn get_networklist_manager_clsid() -> GUID;
-}
-
 /// Gets the [`INetworkListManager`] COM interface class GUID.
 ///
 /// Not reccomended for use directly, but rather though the [`Connectivity`] enum
@@ -135,7 +131,11 @@ extern "C" {
 pub unsafe fn get_networklist_manager() -> windows::core::Result<INetworkListManager> {
     ComInit::init();
 
-    CoCreateInstance(&get_networklist_manager_clsid(), None, CLSCTX_ALL)
+    CoCreateInstance(
+        &Networking::NetworkListManager::NetworkListManager,
+        None,
+        CLSCTX_ALL,
+    )
 }
 
 /// Gets the current connectivity to a network.
