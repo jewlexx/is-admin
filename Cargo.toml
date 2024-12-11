@@ -9,7 +9,7 @@ keywords = ["admin", "linux", "network", "sys", "windows"]
 license = "MIT OR Apache-2.0"
 name = "quork"
 repository = "https://github.com/jewlexx/quork.git"
-rust-version = "1.69.0"
+rust-version = "1.70.0"
 version = "0.8.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -47,9 +47,6 @@ root = ["std"]
 sized_string = []
 std = []
 traits = []
-
-[build-dependencies]
-cc = "1.2"
 
 [dev-dependencies]
 is-root = "0.1"
