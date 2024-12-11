@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, TokenStream};
 use proc_macro_error2::{abort, abort_call_site};
 use quote::{quote, ToTokens};
-use syn::{spanned::Spanned, DeriveInput, Meta, MetaNameValue, Variant, Visibility};
+use syn::{spanned::Spanned, DeriveInput, Meta, Variant, Visibility};
 
 fn ignore_variant(variant: &Variant) -> bool {
     variant.attrs.iter().any(|attr| match attr.meta {
