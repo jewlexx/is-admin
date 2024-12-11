@@ -44,6 +44,9 @@ pub mod traits;
 #[cfg(feature = "network")]
 pub mod network;
 
+#[cfg(feature = "sized_string")]
+pub mod sized_string;
+
 cfg_if::cfg_if! {
     if #[cfg(all(feature = "root", feature = "std"))] {
         pub mod root;
