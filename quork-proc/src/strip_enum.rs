@@ -13,14 +13,14 @@ fn ignore_variant(variant: &Variant) -> bool {
                     ignored = true;
                     Ok(())
                 } else {
-                    Err(meta.error("unsupported stripped property"))
+                    Err(meta.error("unsupported property"))
                 }
             });
 
             if let Err(err) = list.parse_args_with(list_parser) {
                 abort! {
                     err.span(),
-                    "Failed to parse stripped attribute: {}", err;
+                    "Failed to parse attribute: {}", err;
                     help = "Only supported properties on enum variants are `ignore`"
                 }
             }
@@ -88,11 +88,17 @@ pub fn strip_enum(ast: &mut DeriveInput) -> TokenStream {
                         new_ident = Some(meta.value()?.parse()?);
                         Ok(())
                     } else {
-                        Err(meta.error("unsupported stripped property"))
+                        Err(meta.error("unsupported property"))
                     }
                 });
 
-                info_attr.parse_args_with(ident_parser).unwrap();
+                if let Err(err) = info_attr.parse_args_with(ident_parser) {
+                    abort! {
+                        err.span(),
+                        "Failed to parse attribute: {}", err;
+                        help = "Only supported properties on enum definitions are `ident`"
+                    }
+                }
 
                 new_ident.unwrap_or_else(default_ident)
             } else {
@@ -103,7 +109,16 @@ pub fn strip_enum(ast: &mut DeriveInput) -> TokenStream {
                 .iter()
                 .filter(|attr| attr.path().is_ident("stripped_meta"))
                 .flat_map(|meta_attr| match &meta_attr.meta {
-                    Meta::List(meta_data) => vec![meta_data.parse_args::<syn::Meta>().unwrap()],
+                    Meta::List(meta_data) => match meta_data.parse_args::<syn::Meta>() {
+                        Ok(meta) => vec![meta],
+                        Err(err) => {
+                            abort! {
+                                err.span(),
+                                "Failed to parse specified metadata: {}", err;
+                                help = "Make sure the provided arguments are in the form of Rust metadata. (i.e the tokens contained within `#[...]`)"
+                            }
+                        }
+                    },
                     // Meta::NameValue(MetaNameValue {
                     //     value:
                     //         syn::Expr::Lit(syn::ExprLit {

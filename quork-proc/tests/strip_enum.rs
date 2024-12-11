@@ -32,15 +32,23 @@ fn has_all_variants() {
 #[stripped_meta(strum(serialize_all = "kebab-case"))]
 enum EnumExclude {
     Test1(DummyStruct),
-    #[stripped(notignore)]
+    #[stripped(ignore)]
     Test2(DummyStruct),
     Test3(DummyStruct),
 }
 
-#[derive(Strip, Display)]
+#[derive(Strip)]
 #[stripped_meta(derive(EnumIter))]
 #[stripped_meta(strum(serialize_all = "kebab-case"))]
 enum EnumWithInherit {
+    Test1(DummyStruct),
+}
+
+#[derive(Strip)]
+#[stripped_meta(derive(EnumIter))]
+#[stripped_meta(strum(serialize_all = "kebab-case"))]
+#[stripped(ident = IChoseThisIdent)]
+enum EnumWithCustomIdent {
     Test1(DummyStruct),
 }
 
