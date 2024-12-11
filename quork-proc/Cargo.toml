@@ -1,13 +1,13 @@
 [package]
-name = "quork-proc"
-license = "MIT"
-version = "0.3.1"
-description = "The proc macros for quork (not intended for independant use)"
 authors = ["Juliette Cordor"]
+description = "The proc macros for quork (not intended for independant use)"
 documentation = "https://docs.rs/quork"
-repository = "https://github.com/jewlexx/quork.git"
-homepage = "https://github.com/jewlexx/quork.git"
 edition = "2018"
+homepage = "https://github.com/jewlexx/quork.git"
+license = "MIT"
+name = "quork-proc"
+repository = "https://github.com/jewlexx/quork.git"
+version = "0.3.2"
 
 [lib]
 proc-macro = true
@@ -16,7 +16,10 @@ proc-macro = true
 
 [dependencies]
 proc-macro-crate = "3.1"
-proc-macro-error = "1.0"
+proc-macro-error2 = "2.0"
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
+
+[dev-dependencies]
+strum = { version = "0.26", features = ["derive"] }

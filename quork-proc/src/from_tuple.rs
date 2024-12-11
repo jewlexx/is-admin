@@ -1,5 +1,5 @@
 use proc_macro2::Span;
-use proc_macro_error::abort_call_site;
+use proc_macro_error2::abort_call_site;
 use syn::{DeriveInput, Ident, Type};
 
 pub fn derive(input: &DeriveInput) -> proc_macro2::TokenStream {
