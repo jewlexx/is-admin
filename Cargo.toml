@@ -26,7 +26,7 @@ spin = { version = "0.9", optional = true }
 thiserror = { version = "2.0" }
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.58", features = [
+windows = { version = "0.59", features = [
     "Win32_Foundation",
     "Win32_Networking_NetworkListManager",
     "Win32_Security",
